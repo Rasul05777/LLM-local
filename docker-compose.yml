@@ -6,14 +6,21 @@ services:
       - ollama_data:/root/.ollama        
     ports:
       - "11434:11434"
-    entrypoint: ["/bin/bash", "-c", "ollama pull llama3.1:8b-instruct-q4_K_M && exec ollama serve"]
+    entrypoint: ["/bin/bash", "-c", "ollama serve & pid=$!; until ollama list > /dev/null 2>&1; do sleep 1; done; ollama pull llama3.1:8b-instruct-q4_K_M; wait $pid"]
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   app:
     build: .
     container_name: llama_gui
     depends_on:
-      - ollama
+      ollama:
+        condition: service_healthy
     environment:
       - DISPLAY=${DISPLAY}
+      - OLLAMA_API_URL=http://ollama:11434
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
 volumes:
