@@ -1,0 +1,11 @@
+services:
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    volumes:
+      - ollama_data:/root/.ollama        
+    ports:
+      - "11434:11434"
+    entrypoint: ["/bin/bash", "-c", "ollama pull llama3.1:8b-instruct-q4_K_M && exec ollama serve"]
+volumes:
+  ollama_data:
